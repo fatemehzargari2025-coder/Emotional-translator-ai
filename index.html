@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emotion AI | تحلیل احساسات</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 30px 20px;
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+h1 {
+    color: #667eea;
+    margin-bottom: 10px;
+    font-size: 28px;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.upload-area {
+    border: 2px dashed #667eea;
+    border-radius: 20px;
+    padding: 40px 20px;
+    margin: 20px 0;
+    cursor: pointer;
+    transition: 0.3s;
+    background: #f8f9ff;
+}
+
+.upload-area:hover {
+    background: #f0f2ff;
+    border-color: #764ba2;
+}
+
+.upload-area i {
+    font-size: 48px;
+    color: #667eea;
+    margin-bottom: 15px;
+}
+
+.upload-area p {
+    color: #667eea;
+    font-size: 16px;
+}
+
+#fileInput {
+    display: none;
+}
+
+.file-info {
+    background: #f0f2ff;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+}
+
+.btn-analyze {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.btn-analyze:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.btn-analyze:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.result-box {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.emotion-big {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    border-radius: 16px;
+}
+
+.emoji-big {
+    font-size: 80px;
+}
+
+.emotion-name-big {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #333;
+}
+
+.progress-container {
+    background: #e0e0e0;
+    border-radius: 30px;
+    height: 30px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    height: 100%;
+    width: 0%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 15px;
+    color: white;
+    font-weight: bold;
+    transition: width 0.5s;
+}
+
+.emotions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.emotion-chip {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.emotion-chip .emoji {
+    font-size: 28px;
+}
+
+.emotion-chip .name {
+    font-weight: bold;
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.emotion-chip .percent {
+    font-size: 12px;
+    color: #667eea;
+}
+
+.mini-bar {
+    height: 3px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    margin-top: 8px;
+}
+
+.mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    border-radius: 3px;
+}
+
+.loading {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.status {
+    background: #e8e8e8;
+    padding: 12px;
+    border-radius: 12px;
+    margin: 15px 0;
+    font-size: 13px;
+    color: #555;
+}
+
+.status.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.signature {
+    text-align: center;
+    margin-top: 30px;
+    color: white;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+audio {
+    width: 100%;
+    margin: 15px 0;
+    border-radius: 12px;
+}
+
+@media (max-width: 550px) {
+    .emotions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>🎙️ Emotion AI</h1>
+        <p class="subtitle">تشخیص احساسات از صدای شما</p>
+        
+        <!-- بخش آپلود -->
+        <div class="upload-area" id="uploadArea">
+            <div>📁</div>
+            <p>برای انتخاب فایل صوتی کلیک کنید</p>
+            <p style="font-size: 12px; margin-top: 8px;">MP3, WAV, M4A, OGG</p>
+        </div>
+        
+        <input type="file" id="fileInput" accept="audio/*">
+        
+        <!-- اطلاعات فایل انتخاب شده -->
+        <div class="file-info" id="fileInfo">
+            <strong>✅ فایل انتخاب شده:</strong>
+            <span id="fileName"></span>
+            <span id="fileSize"></span>
+        </div>
+        
+        <!-- پلیر صدا -->
+        <audio id="audioPlayer" controls style="display: none;"></audio>
+        
+        <!-- وضعیت -->
+        <div class="status" id="statusMsg">
+            📁 لطفاً یک فایل صوتی انتخاب کنید
+        </div>
+        
+        <!-- دکمه تحلیل -->
+        <button class="btn-analyze" id="analyzeBtn" disabled>
+            ✨ تحلیل احساسات ✨
+        </button>
+    </div>
+    
+    <div class="card">
+        <h2>📊 نتیجه تحلیل</h2>
+        <div id="resultArea">
+            <div style="text-align: center; padding: 30px; color: #999;">
+                ⏳ پس از انتخاب فایل، دکمه تحلیل را بزنید
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="signature">
+    ✨ طراح و توسعه‌دهنده: فاطمه زرگری‌نژاد ✨
+</div>
+
+<script>
+const telegramApp = window.Telegram?.WebApp;
+telegramApp?.ready();
+telegramApp?.expand();
+
+// ======================== متغیرها ========================
+let currentAudioBlob = null;
+
+// المان‌ها
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileNameSpan = document.getElementById('fileName');
+const fileSizeSpan = document.getElementById('fileSize');
+const audioPlayer = document.getElementById('audioPlayer');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const statusMsg = document.getElementById('statusMsg');
+const resultArea = document.getElementById('resultArea');
+
+// ======================== انتخاب فایل ========================
+uploadArea.onclick = () => fileInput.click();
+
+fileInput.onchange = function(e) {
+    const file = e.target.files[0];
+    
+    if (!file) return;
+    
+    // بررسی نوع فایل
+    if (!file.type.startsWith('audio/')) {
+        statusMsg.innerHTML = '❌ لطفاً یک فایل صوتی انتخاب کنید (mp3, wav, m4a, ogg)';
+        statusMsg.className = 'status error';
+        return;
+    }
+    
+    // ذخیره فایل
+    currentAudioBlob = file;
+    
+    // نمایش اطلاعات فایل
+    fileNameSpan.textContent = file.name;
+    fileSizeSpan.innerHTML = ` | ${(file.size / 1024).toFixed(1)} KB`;
+    fileInfo.classList.add('show');
+    
+    // نمایش در پلیر
+    if (audioPlayer.src.startsWith('blob:')) URL.revokeObjectURL(audioPlayer.src);
+    const url = URL.createObjectURL(file);
+    audioPlayer.src = url;
+    audioPlayer.style.display = 'block';
+    
+    // فعال کردن دکمه تحلیل
+    analyzeBtn.disabled = false;
+    
+    statusMsg.innerHTML = `✅ فایل بارگذاری شد: ${file.name} - آماده تحلیل`;
+    statusMsg.className = 'status success';
+    
+    // ریست نتیجه قبلی
+    resultArea.innerHTML = `
+        <div style="text-align: center; padding: 30px; color: #999;">
+            ✅ فایل انتخاب شد. دکمه تحلیل را بزنید.
+        </div>
+    `;
+};
+
+// ======================== تحلیل احساسات ========================
+async function analyzeEmotion(blob) {
+    const formData = new FormData();
+    formData.append('audio', blob, blob.name || 'recording.wav');
+    const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'X-Telegram-Init-Data': telegramApp?.initData || '' },
+        body: formData
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || 'خطا در سرویس تحلیل');
+    return payload;
+}
+
+function displayResult(analysis) {
+    const d = analysis.dominant;
+    
+    let html = `
+        <div class="emotion-big">
+            <div class="emoji-big">${d.emoji}</div>
+            <div class="emotion-name-big">${d.name}</div>
+            <div class="progress-container">
+                <div class="progress-fill" style="width: ${d.percent}%;">${d.percent}%</div>
+            </div>
+            <p style="color: #666; margin-top: 10px;">🎯 سهم احساس غالب ${d.percent}%</p>
+        </div>
+        
+        <h3 style="margin: 25px 0 15px 0; color: #333;">🎭 جزئیات تمام احساسات</h3>
+        <div class="emotions-grid">
+    `;
+    
+    analysis.allEmotions.forEach(emotion => {
+        html += `
+            <div class="emotion-chip">
+                <div class="emoji">${emotion.emoji}</div>
+                <div class="name">${emotion.name}</div>
+                <div class="percent">${emotion.percent}%</div>
+                <div class="mini-bar">
+                    <div class="mini-fill" style="width: ${emotion.percent}%;"></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div style="margin-top: 20px; padding: 12px; background: #e8e8e8; border-radius: 12px; font-size: 12px; color: #666;">
+            📁 ${analysis.fileName} | حجم: ${(analysis.fileSize/1024).toFixed(1)} KB | ⏰ ${analysis.timestamp.toLocaleTimeString('fa-IR')}
+        </div>
+    `;
+    
+    resultArea.innerHTML = html;
+}
+
+// ======================== دکمه تحلیل ========================
+analyzeBtn.onclick = async function() {
+    // بررسی وجود فایل
+    if (!currentAudioBlob || currentAudioBlob.size === 0) {
+        alert('❌ لطفاً اول یک فایل صوتی انتخاب کنید!');
+        return;
+    }
+    
+    // غیرفعال کردن دکمه
+    const originalText = analyzeBtn.innerHTML;
+    analyzeBtn.innerHTML = '<span class="loading"></span> در حال تحلیل...';
+    analyzeBtn.disabled = true;
+    
+    statusMsg.innerHTML = '🤖 در حال تحلیل صدای شما... لطفاً صبر کنید';
+    statusMsg.className = 'status';
+    
+    // نمایش لودینگ در نتیجه
+    resultArea.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <div class="loading" style="width: 40px; height: 40px; border-width: 3px; margin: 0 auto 20px;"></div>
+            <p>🧠 در حال تحلیل احساسات صدا...</p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">حدود 2 ثانیه طول می‌کشد</p>
+        </div>
+    `;
+    
+    try {
+        const result = await analyzeEmotion(currentAudioBlob);
+        displayResult(result);
+        statusMsg.innerHTML = '✅ تحلیل با موفقیت انجام شد!';
+        statusMsg.className = 'status success';
+    } catch(error) {
+        console.error(error);
+        alert('خطا: ' + error.message);
+        statusMsg.innerHTML = '❌ خطا در تحلیل، دوباره تلاش کنید';
+        statusMsg.className = 'status error';
+        resultArea.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #dc3545;">
+                ❌ خطا در تحلیل فایل<br>لطفاً دوباره تلاش کنید
+            </div>
+        `;
+    } finally {
+        analyzeBtn.innerHTML = originalText;
+        analyzeBtn.disabled = false;
+    }
+};
+
+console.log('✅ صفحه آماده است - فقط آپلود فایل و کلیک روی تحلیل');
+</script>
+</body>
+</html>
