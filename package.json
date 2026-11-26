@@ -1,0 +1,14 @@
+{
+  "name": "emotion-ai-telegram-miniapp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create emotion-ai-history",
+    "db:migrate": "wrangler d1 migrations apply emotion-ai-history --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
